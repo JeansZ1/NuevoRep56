@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">NuevoRep</string>
+    <string name="long_text">Volverán las oscuras golondrinas, de Gustavo Adolfo Bécquer.
+                            Soneto XXIII, de Garcilaso de la Vega.</string>
+    <string name="text_wth_bullets">\u2022</string>
+
+    <string name="size_in_b">%1$.2f B</string>
+    <string name="size_in_kb">%1$.2f KB</string>
+    <string name="size_in_mb">%1$.2f MB</string>
+    <string name="size_in_gb">%1$.2f GB</string>
+
+</resources>
