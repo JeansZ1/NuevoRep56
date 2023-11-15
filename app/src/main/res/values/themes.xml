@@ -26,4 +26,15 @@
         <item name="android:navigationBarColor" tools:targetApi="lollipop">@color/light_black</item>
         <item name="android:navigationBarDividerColor" tools:targeApi="o_mr1">@color/light_grey</item>
     </style>
+    
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+    </style>
+    
+    
+    
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="behavior_peekHeight">523dp</item>
+    </style>
 </resources>
