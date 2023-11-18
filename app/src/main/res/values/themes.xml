@@ -17,6 +17,11 @@
         <item name="android:navigationBarColor" tools:targetApi="lollipop">@color/light_black</item>
         <item name="android:navigationBarDividerColor" tools:targeApi="o_mr1">@color/light_grey</item>
         <!-- Customize your light theme here. -->
+
+        <item name="android:editTextColor">@color/white</item>
+        <item name="android:textColorHint">@color/light_white</item>
+        <item name="android:homeAsUpIndicator">@drawable/go_back</item>
+
     </style>
 
     <style name="Theme.NuevoRep" parent="Base.Theme.NuevoRep" />

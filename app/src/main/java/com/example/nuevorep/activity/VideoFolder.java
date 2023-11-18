@@ -1,15 +1,25 @@
 package com.example.nuevorep.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.nuevorep.R;
@@ -19,12 +29,15 @@ import com.example.nuevorep.adapter.VideosAdapter;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class VideoFolder extends AppCompatActivity {
+public class VideoFolder extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
+    private static final String MY_SORT_PREF = "sortOrder";
     private RecyclerView recyclerView;
     private String name;
     private ArrayList<VideoModel> videoModelArrayList = new ArrayList<>();
     private VideosAdapter videosAdapter;
+
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +47,54 @@ public class VideoFolder extends AppCompatActivity {
 
         name = getIntent().getStringExtra("folderName");
         recyclerView = findViewById(R.id.video_recyclerview);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(getResources().getDrawable(R.drawable.go_back));
+        int index = name.lastIndexOf("/");
+        String onlyFolderName = name.substring(index+1);
+        toolbar.setTitle(onlyFolderName);
+
+
 
         loadVideos();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_toolbar, menu);
+        MenuItem menuItem = menu.findItem(R.id.search);
+        SearchView searchView = (SearchView) menuItem.getActionView();
+        ImageView ivClose = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
+        ivClose.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.white),
+                PorterDuff.Mode.SRC_IN);
+        searchView.setQueryHint("Buscando nombre de archivo");
+        searchView.setOnQueryTextListener(this);
+
+
+
+        return super.onCreateOptionsMenu(menu);
+
+    }
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        String input = newText.toLowerCase();
+        ArrayList<VideoModel> searchList = new ArrayList<>();
+        for (VideoModel model : videoModelArrayList){
+            if (model.getTitle().toLowerCase().contains(input)){
+                searchList.add(model);
+            }
+        }
+        videosAdapter.updateSearchList(searchList);
+
+
+        return false;
     }
 
     private void loadVideos() {
@@ -65,9 +124,28 @@ public class VideoFolder extends AppCompatActivity {
 
     private ArrayList<VideoModel> getallVideoFromFolder(Context context, String name) {
         ArrayList<VideoModel> list = new ArrayList<>();
+        SharedPreferences preferences = getSharedPreferences(MY_SORT_PREF, MODE_PRIVATE);
+        String sort = preferences.getString("clasificación", "ordenar por fecha");
+        String order = null;
+        switch (sort){
+
+            case "ordenar por fecha":
+                order = MediaStore.MediaColumns.DATE_ADDED + " ASC";
+                break;
+
+            case "ordenar por nombre":
+                order = MediaStore.MediaColumns.DISPLAY_NAME + " ASC";
+                break;
+
+            case "ordenar por tamaño":
+                order = MediaStore.MediaColumns.DATE_ADDED + " DESC";
+                break;
+
+
+
+        }
 
         Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        String orderBy = MediaStore.Video.Media.DATE_ADDED + " DESC";
         String[] projection = {
                 MediaStore.Video.Media._ID,
                 MediaStore.Video.Media.DATA,
@@ -83,7 +161,7 @@ public class VideoFolder extends AppCompatActivity {
         String selection = MediaStore.Video.Media.DATA + " like?";
         String[] selectionArgs = new String[]{"%" + name + "%"};
 
-        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, orderBy);
+        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, order);
 
         if (cursor!=null){
             while (cursor.moveToNext()){
@@ -137,5 +215,33 @@ public class VideoFolder extends AppCompatActivity {
         }
 
         return list;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private static final int SORT_BY_DATE = 1;
+    private static final int SORT_BY_NAME = 2;
+    private static final int SORT_BY_SIZE = 3;
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        SharedPreferences.Editor editor = getSharedPreferences(MY_SORT_PREF, MODE_PRIVATE).edit();
+        int itemId = item.getItemId();
+        switch (itemId){
+            case SORT_BY_DATE:
+                editor.putString("clasificación", "ordenar por fecha");
+                editor.apply();
+                this.recreate();
+                break;
+            case SORT_BY_NAME:
+                editor.putString("clasificación", "ordenar por nombre");
+                editor.apply();
+                this.recreate();
+                break;
+            case SORT_BY_SIZE:
+                editor.putString("clasificación", "ordenar por tamaño");
+                editor.apply();
+                this.recreate();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
