@@ -32,6 +32,11 @@
         <item name="android:navigationBarDividerColor" tools:targeApi="o_mr1">@color/light_grey</item>
     </style>
     
+    <style name="MyRipple">
+        <item name="colorControlHighlight">@color/ripple_color</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+    
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
     </style>

@@ -1,5 +1,6 @@
 package com.example.nuevorep.adapter;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentUris;
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.nuevorep.R;
 import com.example.nuevorep.VideoModel;
+import com.example.nuevorep.activity.VideoPlayer;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.MyHolder> {
 
 
-    private ArrayList<VideoModel> videoFolder = new ArrayList<>();
+    public static ArrayList<VideoModel> videoFolder = new ArrayList<>();
     private Context context;
 
 
@@ -54,9 +56,11 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.MyHolder> 
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyHolder holder, @SuppressLint("RecyclerView") int position) {
 
-        Glide.with(context).load(videoFolder.get(position).getPath()).into(holder.thumbnail);
+        Glide.with(context)
+                .load(Uri.fromFile(new File(videoFolder.get(position).getPath())))
+                .into(holder.thumbnail);
         holder.title.setText(videoFolder.get(position).getTitle());
         holder.duration.setText(videoFolder.get(position).getDuration());
         holder.size.setText(videoFolder.get(position).getSize());
@@ -91,6 +95,14 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.MyHolder> 
                 showProperties(position);
 
             });
+        });
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, VideoPlayer.class);
+                intent.putExtra("p", position);
+                context.startActivity(intent);
+            }
         });
 
 

@@ -9,4 +9,37 @@
     <string name="size_in_mb">%1$.2f MB</string>
     <string name="size_in_gb">%1$.2f GB</string>
 
+    <string name="audio_sub">Audio &amp; Subtítulos</string>
+    <string name="lock">Bloquear</string>
+    <string name="speed_1x">Velociddad(1x)</string>
+    <string name="rotate">Rotar</string>
+    <string name="tap_to_unlock">Toque para Desbloquear</string>
+    <string name="screen_locked">Pantalla Bloqueada</string>
+    <string name="unlock_controls">¿Desbloquear los Controles?</string>
+    <string name="folder_name">Nombre de la Carpeta</string>
+    <string name="_10_videos">10 videos</string>
+    <string name="_1_00gb">1.00Gb</string>
+    <string name="_00_00_00" >00:00:00</string>
+    <string name="search" >Buscarl el Nombre del Archivo</string>
+
+
+
+
+    <string name="open">abrir</string>
+    <string name="close">cerrar</string>
+    <string name="about_us">Sobre Nosotros</string>
+    <string name="version">Version</string>
+    <string name="_1_0_1">1.0.1</string>
+    <string name="direct_n_app">Direccion\nApp</string>
+    <string name="app_n_link">App\nLink</string>
+    <string name="share">Compartir</string>
+    <string name="rename">Renombrar</string>
+    <string name="title">Nombre:</string>
+    <string name="path">Ruta:</string>
+    <string name="size">Tamaño:</string>
+    <string name="duration">Duración:</string>
+    <string name="resolution">Resolución:</string>
+
+
+
 </resources>
