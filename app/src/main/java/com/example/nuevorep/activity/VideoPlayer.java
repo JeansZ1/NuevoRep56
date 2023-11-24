@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -18,19 +19,20 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.example.nuevorep.R;
 
 public class VideoPlayer extends AppCompatActivity implements View.OnTouchListener,
-        ScaleGestureDetector.OnScaleGestureListener {
+        ScaleGestureDetector.OnScaleGestureListener, View.OnClickListener {
 
-    int position = -1;
-    private VideoView videoView;
-    LinearLayout one, two , three , four;
+
 
 
     RelativeLayout zoomLayout;
@@ -42,6 +44,9 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
     private Display display;
     private Point size;
     private Mode mode = Mode.NONE;
+
+
+
     private enum Mode {
         NONE,
         DRAG,
@@ -60,6 +65,14 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
     private float dy = 0f;
     private float prevDx = 0f;
     private float prevDy = 0f;
+
+
+    int position = -1;
+    private VideoView videoView;
+    LinearLayout one, two , three , four;
+    ImageButton goBack, rewind, forward, playPause;
+    TextView title, endTimes;
+    SeekBar videoSeekBar;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -156,14 +169,29 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
         two = findViewById(R.id.videoView_two_layout);
         three = findViewById(R.id.videoView_three_layout);
         four = findViewById(R.id.videoView_four_layout);
+        goBack = findViewById(R.id.videoView_go_back);
+        title = findViewById(R.id.videoView_title);
+        rewind = findViewById(R.id.videoView_rewind);
+        playPause = findViewById(R.id.videoView_play_pause_btn);
+        forward = findViewById(R.id.videoView_forward);
+        endTimes = findViewById(R.id.videoView_endtime);
+        videoSeekBar = findViewById(R.id.videoView_seekbar);
+
+        goBack.setOnClickListener(this);
+        rewind.setOnClickListener(this);
+        playPause.setOnClickListener(this);
+        forward.setOnClickListener(this);
+
 
         position = getIntent().getIntExtra("p", -1);
+        title.setText(videoFolder.get(position).getTitle());
         String path = videoFolder.get(position).getPath();
         if (path!=null){
             videoView.setVideoPath(path);
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    videoSeekBar.setMax(videoView.getDuration());
                     videoView.start();
                 }
             });
@@ -183,6 +211,92 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
         scaleDetector = new ScaleGestureDetector(getApplicationContext(), this);
         gestureDetector = new GestureDetectorCompat(getApplicationContext(), new GestureDetector());
 
+        initalizeSeekBars();
+        setHandle();
+
+
+    }
+
+    private void initalizeSeekBars(){
+       videoSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+           @Override
+           public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+               if (fromUser){
+                   videoView.seekTo(progress);
+                   videoView.start();
+                   int currentPosition = videoView.getCurrentPosition();
+                   endTimes.setText(""+convertIntoTime(videoView.getDuration()-currentPosition));
+               }
+           }
+
+           @Override
+           public void onStartTrackingTouch(SeekBar seekBar) {
+
+           }
+
+           @Override
+           public void onStopTrackingTouch(SeekBar seekBar) {
+
+           }
+       });
+    }
+
+    private String convertIntoTime(int ms){
+        String time;
+        int x, seconds, minutes, hours;
+        x = ms / 1000;
+        seconds = x % 60;
+        x /= 60;
+        minutes = x % 60;
+        x /= 60;
+        hours = x % 24;
+        if (hours != 0)
+            time = String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
+        else time = String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
+        return time;
+    }
+    private void setHandle(){
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (videoView.getDuration()>0){
+                    int currentPosition = videoView.getCurrentPosition();
+                    videoSeekBar.setProgress(currentPosition);
+                    endTimes.setText(""+convertIntoTime(videoView.getDuration()-currentPosition));
+                }
+                handler.postDelayed(this,0);
+            }
+        };
+        handler.postDelayed(runnable,500);
+    }
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+
+            case R.id.videoView_go_back:
+                onBackPressed();
+                break;
+
+            case R.id.videoView_rewind:
+                //10000 = 1sec
+                videoView.seekTo(videoView.getCurrentPosition() - 10000);
+                break;
+
+            case R.id.videoView_forward:
+                videoView.seekTo(videoView.getCurrentPosition() + 10000);
+                break;
+
+            case R.id.videoView_play_pause_btn:
+                if (videoView.isPlaying()){
+                    videoView.pause();
+                    playPause.setImageDrawable(getResources().getDrawable(R.drawable.ic_play));
+                }else {
+                    videoView.start();
+                    playPause.setImageDrawable(getResources().getDrawable(R.drawable.netflix_pause_button));
+                }
+                break;
+        }
 
     }
 
@@ -252,7 +366,7 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
         two.setVisibility(View.VISIBLE);
         three.setVisibility(View.VISIBLE);
         four.setVisibility(View.VISIBLE);
-        //todo this function will show status and navigation when we click on screen
+        //Todo esta función mostrará el estado y la navegación cuando hagamos clic en la pantalla.
         final Window window = this.getWindow();
         if (window == null){
             return;

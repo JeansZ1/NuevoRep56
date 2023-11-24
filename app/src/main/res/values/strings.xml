@@ -19,10 +19,8 @@
     <string name="folder_name">Nombre de la Carpeta</string>
     <string name="_10_videos">10 videos</string>
     <string name="_1_00gb">1.00Gb</string>
-    <string name="_00_00_00" >00:00:00</string>
-    <string name="search" >Buscarl el Nombre del Archivo</string>
-
-
+    <string name="_00_00_00">00:00:00</string>
+    <string name="search">Buscarl el Nombre del Archivo</string>
 
 
     <string name="open">abrir</string>
@@ -39,7 +37,6 @@
     <string name="size">Tamaño:</string>
     <string name="duration">Duración:</string>
     <string name="resolution">Resolución:</string>
-
 
 
 </resources>
