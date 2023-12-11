@@ -6,7 +6,12 @@ import static com.example.nuevorep.adapter.VideosAdapter.videoFolder;
 import androidx.annotation.NonNull;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 
@@ -34,6 +39,8 @@ import android.widget.VideoView;
 
 import com.example.nuevorep.R;
 
+import java.util.ArrayList;
+
 public class VideoPlayer extends AppCompatActivity implements View.OnTouchListener,
         ScaleGestureDetector.OnScaleGestureListener, View.OnClickListener {
 
@@ -54,6 +61,56 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
 
     @Override
     public void onClick(View v) {
+
+        LinearLayout videoViewRotation = findViewById(R.id.videoView_rotation);
+        videoViewRotation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int orientation = getResources().getConfiguration().orientation;
+                if (orientation == Configuration.ORIENTATION_PORTRAIT){
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                } else if (orientation == Configuration.ORIENTATION_LANDSCAPE){
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+            }
+        });
+
+
+        LinearLayout videoViewLockLayout = findViewById(R.id.videoView_lock_screen);
+        videoViewLockLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideDefaultControls();
+                five.setVisibility(View.VISIBLE);
+                // Lógica para el caso videoView_lock_screen
+            }
+        });
+        LinearLayout videoFiveLayout = findViewById(R.id.video_five_layout);
+        videoFiveLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isOpen) {
+                    unlockControls.setVisibility(View.INVISIBLE);
+                    lockTextOne.setVisibility(View.INVISIBLE);
+                    lockTextTwo.setVisibility(View.INVISIBLE);
+                    isOpen = false;
+                } else {
+                    unlockControls.setVisibility(View.INVISIBLE);
+                    lockTextOne.setVisibility(View.INVISIBLE);
+                    lockTextTwo.setVisibility(View.INVISIBLE);
+                    isOpen = true;
+                }
+            }
+        });
+
+        LinearLayout videoFiveChildLayout = findViewById(R.id.video_five_child_layout);
+        videoFiveChildLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                five.setVisibility(View.GONE);
+                showDefaultControls();
+            }
+        });
         goBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,6 +157,7 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
     int device_width;
     private int sWidth;
     private boolean isEnable = true;
+    private boolean isOpen = true;
     private float scale = 1.0f;
     private float lastScaleFactor = 0f;
     // Where the finger first  touches the screen
@@ -114,9 +172,9 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
 
     int position = -1;
     private VideoView videoView;
-    LinearLayout one, two , three , four;
+    LinearLayout one, two , three , four, five, lockControls, unlockControls, rotate, audioTrack;
     ImageButton goBack, rewind, forward, playPause;
-    TextView title, endTimes;
+    TextView title, endTimes, lockTextOne, lockTextTwo;
     SeekBar videoSeekBar;
 
     @Override
@@ -221,6 +279,24 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
         forward = findViewById(R.id.videoView_forward);
         endTimes = findViewById(R.id.videoView_endtime);
         videoSeekBar = findViewById(R.id.videoView_seekbar);
+        lockControls = findViewById(R.id.videoView_lock_screen);
+        five = findViewById(R.id.video_five_layout);
+        unlockControls = findViewById(R.id.video_five_child_layout);
+        lockTextOne = findViewById(R.id.videoView_lock_text);
+        lockTextTwo = findViewById(R.id.videoView_lock_text_two);
+        rotate = findViewById(R.id.videoView_rotation);
+        audioTrack = findViewById(R.id.videoView_track);
+
+
+        goBack.setOnClickListener(this);
+        rewind.setOnClickListener(this);
+        playPause.setOnClickListener(this);
+        forward.setOnClickListener(this);
+        lockControls.setOnClickListener(this);
+        five.setOnClickListener(this);
+        unlockControls.setOnClickListener(this);
+        rotate.setOnClickListener(this);
+
 
 
 
@@ -246,6 +322,13 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
                 public void onPrepared(MediaPlayer mp) {
                     videoSeekBar.setMax(videoView.getDuration());
                     videoView.start();
+                    audioTrack.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            checkMultiAudioTrack(mp);
+
+                        }
+                    });
                 }
             });
         }else {
@@ -283,6 +366,53 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
 
 
     }
+    private void checkMultiAudioTrack(MediaPlayer mediaPlayer) {
+        MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
+
+        ArrayList<Integer> audioTracksIndex = new ArrayList<>();
+
+        for (int i = 0; i < trackInfos.length; i++) {
+            if (trackInfos[i].getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                audioTracksIndex.add(i);
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(VideoPlayer.this);
+        builder.setTitle("Select Audio Track");
+
+        String[] values = new String[audioTracksIndex.size()];
+        for (int i = 0; i < audioTracksIndex.size(); i++) {
+            values[i] = "Track " + i;
+        }
+        /*
+         * SingleChoice means RadioGroup
+         * */
+        builder.setSingleChoiceItems(values, 0, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mediaPlayer.selectTrack(which);
+                Toast.makeText(VideoPlayer.this, "Track " + which + " Selected", Toast.LENGTH_SHORT).show();
+            }
+        }).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mediaPlayer.getSelectedTrack(which);
+                }
+                mediaPlayer.start();
+                Toast.makeText(VideoPlayer.this, "we are working on that :)", Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+
 
     private void initalizeSeekBars(){
         videoSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -338,6 +468,9 @@ public class VideoPlayer extends AppCompatActivity implements View.OnTouchListen
         handler.postDelayed(runnable,500);
     }
     @SuppressLint("NonConstantResourceId")
+
+
+
 
 
     private class GestureDetector extends android.view.GestureDetector.SimpleOnGestureListener{
